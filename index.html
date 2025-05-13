@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>語音互動 AI 助手</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>語音互動 AI 助手</h1>
+        
+        <div class="speech-container">
+            <button id="startVoice" class="btn">開始說話</button>
+            <div class="upload-container">
+                <label for="audioFile" class="btn upload-btn">上傳語音檔</label>
+                <input type="file" id="audioFile" accept="audio/*" hidden>
+            </div>
+            <div class="status" id="status">準備就緒...</div>
+        </div>
+
+        <div class="result-container">
+            <div class="recognition-result">
+                <h2>語音辨識結果</h2>
+                <div id="recognitionResult" class="result-box"></div>
+            </div>
+            
+            <div class="gemini-response">
+                <h2>Gemini 回應</h2>
+                <div id="geminiResponse" class="result-box"></div>
+                <button id="askGemini" class="btn" disabled>詢問 Gemini</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
