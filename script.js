@@ -1,5 +1,5 @@
 // API Key
-const API_KEY = 'AIzaSyBAZb69xAZlQPn3cRrKHOQSv2gzwoDKhC4'; // Gemini API Key
+const API_KEY = 'AIzaSyD9QTrjeY3CXj33avKs9G5x5HyWTEFpetM'; // 更新的 Gemini API Key
 
 // DOM元素
 const startVoiceBtn = document.getElementById('startVoice');
@@ -171,9 +171,9 @@ askGeminiBtn.addEventListener('click', async () => {
     }
 });
 
-// 呼叫Gemini API的函數
+// 呼叫 Gemini API 的函數
 async function callGeminiAPI(text) {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
     
     const payload = {
         contents: [{
@@ -184,6 +184,8 @@ async function callGeminiAPI(text) {
     };
     
     try {
+        console.log('發送到 Gemini API 的數據:', JSON.stringify(payload));
+        
         const response = await fetch(`${url}?key=${API_KEY}`, {
             method: 'POST',
             headers: {
@@ -192,23 +194,46 @@ async function callGeminiAPI(text) {
             body: JSON.stringify(payload)
         });
         
+        console.log('API 回應狀態:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            let errorMessage = `HTTP error! Status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                console.error('API 錯誤回應:', errorData);
+                errorMessage += `, Details: ${JSON.stringify(errorData)}`;
+            } catch (e) {
+                console.error('無法解析錯誤回應:', e);
+            }
+            throw new Error(errorMessage);
         }
         
         const data = await response.json();
+        console.log('API 完整回應:', data);
         
-        // 解析Gemini API回應
-        if (data.candidates && data.candidates.length > 0 && 
-            data.candidates[0].content && 
-            data.candidates[0].content.parts && 
-            data.candidates[0].content.parts.length > 0) {
-            return data.candidates[0].content.parts[0].text;
-        } else {
-            throw new Error('無法從API回應中獲取文本內容');
+        // 解析 Gemini API 回應，更彈性的解析方式
+        if (data.candidates && data.candidates.length > 0) {
+            if (data.candidates[0].content && 
+                data.candidates[0].content.parts && 
+                data.candidates[0].content.parts.length > 0) {
+                return data.candidates[0].content.parts[0].text;
+            } else if (data.candidates[0].text) {
+                // 嘗試其他可能的回應格式
+                return data.candidates[0].text;
+            }
+        } else if (data.content && data.content.parts && data.content.parts.length > 0) {
+            // 直接從 content 讀取
+            return data.content.parts[0].text;
+        } else if (data.text) {
+            // 最簡單的情況
+            return data.text;
         }
+        
+        // 若無法解析，提供完整回應以便檢查
+        console.error('無法從標準路徑獲取回應文本，完整回應:', data);
+        return `無法解析 AI 回應。請檢查控制台以了解詳情。原始回應結構: ${JSON.stringify(data).substring(0, 200)}...`;
     } catch (error) {
-        console.error('呼叫Gemini API時發生錯誤:', error);
+        console.error('呼叫 Gemini API 時發生錯誤:', error);
         throw error;
     }
 }
